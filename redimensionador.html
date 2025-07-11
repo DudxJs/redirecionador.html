@@ -23,7 +23,7 @@
 
       const ip = await getIP();
 
-      const apiUrl = "https://script.google.com/macros/s/SEU_ID/exec";
+      const apiUrl = "https://script.google.com/macros/s/AKfycbygnV5poqrdJlh-jnGszxxyiF2le11dARkZDsughPBL71tCishEpGHZTucDPWwFbd9ekA/exec";
       const res = await fetch(`${apiUrl}?tokenTemp=${tokenTemp}&ip=${ip}`);
       const keyReal = await res.text();
 
