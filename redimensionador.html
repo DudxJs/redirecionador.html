@@ -1,25 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Validação de Key</title>
+  <title>Validação da Key</title>
 </head>
 <body>
-  <h2>Verificando chave...</h2>
+  <h2>Verificando acesso...</h2>
+  <div id="resultado"></div>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    async function getIP() {
+      const res = await fetch('https://api.ipify.org');
+      return await res.text();
+    }
 
-    fetch("https://script.google.com/macros/s/SEU_ID/exec?token=" + token + "&ip=" + await (await fetch('https://api.ipify.org')).text())
-      .then(r => r.text())
-      .then(r => {
-        if (r == "VALIDO") {
-          document.body.innerHTML = "<h2>✅ Key válida! Você pode usar o script.</h2>";
-        } else if (r == "EXPIRADO") {
-          document.body.innerHTML = "<h2>⏰ Key expirada. Acesse novamente pelo Linkvertise.</h2>";
-        } else {
-          document.body.innerHTML = "<h2>❌ Key inválida. Acesse pelo Linkvertise.</h2>";
-        }
-      });
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const tokenTemp = params.get("token");
+
+      if (!tokenTemp) {
+        document.getElementById("resultado").innerText = "Token temporário ausente. Acesse pelo Linkvertise.";
+        return;
+      }
+
+      const ip = await getIP();
+
+      const apiUrl = "https://script.google.com/macros/s/SEU_ID/exec";
+      const res = await fetch(`${apiUrl}?tokenTemp=${tokenTemp}&ip=${ip}`);
+      const keyReal = await res.text();
+
+      const resultado = document.getElementById("resultado");
+
+      if (keyReal === "TOKEN_TEMP_EXPIRADO") {
+        resultado.innerText = "⏰ Token temporário expirado. Por favor, volte e faça o processo pelo Linkvertise novamente.";
+      } else if (keyReal === "TOKEN_TEMP_INVALIDO") {
+        resultado.innerText = "❌ Token inválido. Acesse somente pelo Linkvertise.";
+      } else {
+        resultado.innerHTML = `<h3>✅ Sua key para o script Roblox:</h3><p><b>${keyReal}</b></p><p>Essa key é válida por 24 horas para este dispositivo.</p>`;
+      }
+    })();
   </script>
 </body>
 </html>
