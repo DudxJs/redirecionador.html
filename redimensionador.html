@@ -1,40 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Validação da Key</title>
+  <title>🔑 Verificando sua Key...</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #resultado {
+      font-size: 20px;
+      margin-top: 30px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Verificando acesso...</h2>
-  <div id="resultado"></div>
+  <h2>🔁 Processando...</h2>
+  <div id="resultado">Aguarde, estamos validando seu acesso...</div>
+
   <script>
     async function getIP() {
-      const res = await fetch('https://api.ipify.org');
-      return await res.text();
+      try {
+        const res = await fetch('https://api.ipify.org');
+        return await res.text();
+      } catch {
+        return null;
+      }
     }
 
     (async () => {
       const params = new URLSearchParams(window.location.search);
-      const tokenTemp = params.get("token");
+      const token = params.get("token");
 
-      if (!tokenTemp) {
-        document.getElementById("resultado").innerText = "Token temporário ausente. Acesse pelo Linkvertise.";
+      if (!token) {
+        document.getElementById("resultado").innerText = "❌ Token ausente. Acesse somente pelo Linkvertise.";
         return;
       }
 
       const ip = await getIP();
+      if (!ip) {
+        document.getElementById("resultado").innerText = "❌ Erro ao obter IP.";
+        return;
+      }
 
-      const apiUrl = "https://script.google.com/macros/s/AKfycbygnV5poqrdJlh-jnGszxxyiF2le11dARkZDsughPBL71tCishEpGHZTucDPWwFbd9ekA/exec";
-      const res = await fetch(`${apiUrl}?tokenTemp=${tokenTemp}&ip=${ip}`);
-      const keyReal = await res.text();
+      const apiURL = "https://script.google.com/macros/s/AKfycbygnV5poqrdJlh-jnGszxxyiF2le11dARkZDsughPBL71tCishEpGHZTucDPWwFbd9ekA/exec";
 
-      const resultado = document.getElementById("resultado");
+      try {
+        const res = await fetch(`${apiURL}?tokenTemp=${token}&ip=${ip}`);
+        const key = await res.text();
 
-      if (keyReal === "TOKEN_TEMP_EXPIRADO") {
-        resultado.innerText = "⏰ Token temporário expirado. Por favor, volte e faça o processo pelo Linkvertise novamente.";
-      } else if (keyReal === "TOKEN_TEMP_INVALIDO") {
-        resultado.innerText = "❌ Token inválido. Acesse somente pelo Linkvertise.";
-      } else {
-        resultado.innerHTML = `<h3>✅ Sua key para o script Roblox:</h3><p><b>${keyReal}</b></p><p>Essa key é válida por 24 horas para este dispositivo.</p>`;
+        const resultado = document.getElementById("resultado");
+
+        if (key === "TOKEN_TEMP_EXPIRADO") {
+          resultado.innerText = "⏰ Token expirado. Pegue uma nova key no jogo.";
+        } else if (key === "TOKEN_TEMP_INVALIDO") {
+          resultado.innerText = "❌ Token inválido. Acesse apenas pelo botão no jogo.";
+        } else {
+          resultado.innerHTML = `
+            ✅ <strong>Sua key foi gerada com sucesso!</strong><br><br>
+            🔑 <code style="font-size:22px">${key}</code><br><br>
+            📋 Copie a key e cole no jogo para desbloquear!
+          `;
+        }
+      } catch (e) {
+        document.getElementById("resultado").innerText = "❌ Erro ao conectar à API.";
       }
     })();
   </script>
